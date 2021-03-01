@@ -537,5 +537,7 @@ Selection.AutoFill Range(Cells(4, 25), Cells(contador, 25))
 End Sub
 
 
+###########
+Strike
 
-
+'EXP(volatilidad*SQRT(dias/365)*NORMSINV(0,25*EXP(tasa_local*(dias/365)))+(volatilidad^2/2)*(dias/365))*Forward
