@@ -1,0 +1,541 @@
+Function VALOR_BS(Fwd, strike, Tasa_Local, volatilidad, tiempo, tipo, operación)
+         
+         d1 = (Log(Fwd / strike) + ((volatilidad) ^ 2 / 2) * tiempo) / (volatilidad * tiempo ^ (1 / 2))
+         d2 = d1 - volatilidad * tiempo ^ (1 / 2)
+         
+         
+         If tipo = "Cal" Then
+            nd1 = Application.WorksheetFunction.NormSDist(d1)
+            nd2 = Application.WorksheetFunction.NormSDist(d2)
+            VALOR_BS = Exp(-Tasa_Local * tiempo) * (Fwd * nd1 - strike * nd2)
+            If operación = "Ven" Then VALOR_BS = -VALOR_BS
+         End If
+         
+         If tipo = "Put" Then
+            nd1 = Application.WorksheetFunction.NormSDist(-d1)
+            nd2 = Application.WorksheetFunction.NormSDist(-d2)
+            VALOR_BS = Exp(-Tasa_Local * tiempo) * (strike * nd2 - Fwd * nd1)
+            If operación = "Ven" Then VALOR_BS = -VALOR_BS
+         End If
+         
+End Function
+Function VALOR_BS1(Spot, strike, Tasa_Local, Tasa_Exterior, volatilidad, tiempo, tipo, operación)
+         
+         d1 = (Log(Spot / strike) + (Tasa_Local - Tasa_Exterior + ((volatilidad) ^ 2 / 2)) * tiempo) / (volatilidad * tiempo ^ (1 / 2))
+         d2 = d1 - volatilidad * tiempo ^ (1 / 2)
+         
+         primero = Log(Spot / strike)
+         segundo = (Tasa_Local - Tasa_Exterior + ((volatilidad ^ 2) / 2)) * tiempo
+         tercero = volatilidad * (tiempo ^ (1 / 2))
+         
+
+         If tipo = "Cal" Then
+            nd1 = Application.WorksheetFunction.NormSDist(d1)
+            nd2 = Application.WorksheetFunction.NormSDist(d2)
+            VALOR_BS1 = Spot * Exp(-Tasa_Exterior * tiempo) * nd1 - strike * Exp(-Tasa_Local * tiempo) * nd2
+            If operación = "Ven" Then VALOR_BS1 = -VALOR_BS1
+         End If
+         
+         If tipo = "Put" Then
+            nd1 = Application.WorksheetFunction.NormSDist(-d1)
+            nd2 = Application.WorksheetFunction.NormSDist(-d2)
+            VALOR_BS1 = -Spot * Exp(-Tasa_Exterior * tiempo) * nd1 + strike * Exp(-Tasa_Local * tiempo) * nd2
+            If operación = "Ven" Then VALOR_BS1 = -VALOR_BS1
+         End If
+         
+End Function
+Function DELTA(Fwd, strike, tasa_extranjera, volatilidad, tiempo, tipo, operación)
+         
+         d1 = (Log(Fwd / strike) + (((volatilidad) ^ 2 / 2)) * tiempo) / (volatilidad * tiempo ^ (1 / 2))
+                  
+         If tipo = "Cal" Then
+            If operación = "Com" Then DELTA = Application.WorksheetFunction.NormSDist(d1) * Exp(-tasa_extranjera * tiempo)
+            If operación = "Ven" Then DELTA = -Application.WorksheetFunction.NormSDist(d1) * Exp(-tasa_extranjera * tiempo)
+         End If
+         If tipo = "Put" Then
+            If operación = "Com" Then DELTA = -(Application.WorksheetFunction.NormSDist(-d1)) * Exp(-tasa_extranjera * tiempo)
+            If operación = "Ven" Then DELTA = (Application.WorksheetFunction.NormSDist(-d1)) * Exp(-tasa_extranjera * tiempo)
+         End If
+
+End Function
+
+Function DELTA1(Spot, strike, Tasa_Local, tasa_extranjera, volatilidad, tiempo, tipo, operación)
+         
+         d1 = (Log(Spot / strike) + (Tasa_Local - tasa_extranjera + ((volatilidad) ^ 2 / 2)) * tiempo) / (volatilidad * tiempo ^ (1 / 2))
+                  
+         If tipo = "Cal" Then
+            If operación = "Com" Then DELTA1 = Application.WorksheetFunction.NormSDist(d1) * Exp(-tasa_extranjera * tiempo)
+            If operación = "Ven" Then DELTA1 = -Application.WorksheetFunction.NormSDist(d1) * Exp(-tasa_extranjera * tiempo)
+         End If
+         If tipo = "Put" Then
+            If operación = "Com" Then DELTA1 = -(Application.WorksheetFunction.NormSDist(-d1)) * Exp(-tasa_extranjera * tiempo)
+            If operación = "Ven" Then DELTA1 = (Application.WorksheetFunction.NormSDist(-d1)) * Exp(-tasa_extranjera * tiempo)
+         End If
+
+End Function
+
+Function GAMMA(Spot, strike, Tasa_Local, tasa_extranjera, volatilidad, tiempo, tipo, operación)
+         
+         d1 = (Log(Spot / strike) + (Tasa_Local - tasa_extranjera + ((volatilidad) ^ 2 / 2)) * tiempo) / (volatilidad * tiempo ^ (1 / 2))
+         
+         If operación = "Ven" Then
+            GAMMA = ((1 / (2 * WorksheetFunction.Pi) ^ 0.5 * Exp(1) ^ (-d1 ^ 2 / 2)) / (Spot * volatilidad * (tiempo) ^ (0.5))) * Exp(-tasa_extranjera * tiempo)
+            GAMMA = -GAMMA
+         End If
+         If operación = "Com" Then
+            GAMMA = ((1 / (2 * WorksheetFunction.Pi) ^ 0.5 * Exp(1) ^ (-d1 ^ 2 / 2)) / (Spot * volatilidad * (tiempo) ^ (0.5))) * Exp(-tasa_extranjera * tiempo)
+         End If
+
+End Function
+
+Function VEGA(Spot, strike, Tasa_Local, tasa_extranjera, volatilidad, tiempo, tipo, operación)
+
+         d1 = (Log(Spot / strike) + (Tasa_Local - tasa_extranjera + ((volatilidad) ^ 2 / 2)) * tiempo) / (volatilidad * tiempo ^ (1 / 2))
+                          
+         If operación = "Ven" Then
+            VEGA = 1 / (2 * WorksheetFunction.Pi) ^ 0.5 * Exp(1) ^ (-d1 ^ 2 / 2) * Spot * Exp(-tasa_extranjera * tiempo) * (tiempo) ^ 0.5
+            VEGA = -VEGA
+         End If
+         If operación = "Com" Then
+            VEGA = 1 / (2 * WorksheetFunction.Pi) ^ 0.5 * Exp(1) ^ (-d1 ^ 2 / 2) * Spot * Exp(-tasa_extranjera * tiempo) * (tiempo) ^ 0.5
+         End If
+
+End Function
+
+Function RHO_LOCAL(Spot, strike, Tasa_Local, tasa_extranjera, volatilidad, tiempo, tipo, operación)
+         
+         d1 = (Log(Spot / strike) + (Tasa_Local - tasa_extranjera + ((volatilidad) ^ 2 / 2)) * tiempo) / (volatilidad * tiempo ^ (1 / 2))
+         d2 = d1 - volatilidad * tiempo ^ (1 / 2)
+                  
+         If tipo = "Cal" Then
+            nd2 = Application.WorksheetFunction.NormSDist(d2)
+            RHO_LOCAL = strike * tiempo * Exp(-2 * Tasa_Local * tiempo) * nd2 * Exp(-tasa_extranjera * tiempo)
+            If operación = "Ven" Then RHO_PESOS = -RHO_PESOS
+         End If
+         
+         If tipo = "Put" Then
+            nd2 = Application.WorksheetFunction.NormSDist(-d2)
+            RHO_LOCAL = -strike * tiempo * Exp(-2 * Tasa_Local * tiempo) * nd2 * Exp(-tasa_extranjera * tiempo)
+            If operación = "Ven" Then RHO_LOCAL = -RHO_LOCAL
+         End If
+
+End Function
+
+
+Function RHO_EXTERIOR(Spot, strike, Tasa_Local, tasa_extranjera, volatilidad, tiempo, tipo, operación)
+
+         d1 = (Log(Spot / strike) + (Tasa_Local - tasa_extranjera + ((volatilidad) ^ 2 / 2)) * tiempo) / (volatilidad * tiempo ^ (1 / 2))
+                          
+         If tipo = "Cal" Then
+            nd1 = Application.WorksheetFunction.NormSDist(d1)
+            RHO_EXTERIOR = -Spot * tiempo * Exp(-tasa_extranjera * tiempo) * nd1 * Exp(-(Tasa_Local + tasa_extranjera) * tiempo)
+            If operación = "Ven" Then RHO_DÓLARES = -RHO_DÓLARES
+         End If
+         
+         If tipo = "Put" Then
+            nd1 = Application.WorksheetFunction.NormSDist(-d1)
+            RHO_EXTERIOR = Spot * tiempo * Exp(-tasa_extranjera * tiempo) * nd1 * Exp(-(Tasa_Local + tasa_extranjera) * tiempo)
+            If operación = "Ven" Then RHO_EXTERIOR = -RHO_EXTERIOR
+         End If
+
+End Function
+
+Function THETA(Spot, strike, Tasa_Local, tasa_extranjera, volatilidad, tiempo, tipo, operación)
+
+         d1 = (Log(Spot / strike) + (Tasa_Local - tasa_extranjera + ((volatilidad) ^ 2 / 2)) * tiempo) / (volatilidad * tiempo ^ (1 / 2))
+         d2 = d1 - volatilidad * tiempo ^ (1 / 2)
+         
+         If tipo = "Cal" Then
+            nd1 = Application.WorksheetFunction.NormSDist(d1)
+            nd2 = Application.WorksheetFunction.NormSDist(d2)
+            THETA = -Spot / (2 * WorksheetFunction.Pi) ^ 0.5 * Exp(1) ^ (-d1 ^ 2 / 2) * volatilidad / (2 * (tiempo) ^ 0.5) / Exp(tasa_extranjera * tiempo) - (eftocon(Tasa_Local)) * strike / Exp(Tasa_Local * tiempo) * nd2 + (eftocon(tasa_extranjera)) * Spot / Exp(tasa_extranjera * tiempo) * nd1
+            If operación = "Ven" Then THETA = -THETA
+         End If
+         If tipo = "Put" Then
+            nd1 = Application.WorksheetFunction.NormSDist(-d1)
+            nd2 = Application.WorksheetFunction.NormSDist(-d2)
+            THETA = -Spot / (2 * WorksheetFunction.Pi) ^ 0.5 * Exp(1) ^ (-d1 ^ 2 / 2) * volatilidad / (2 * (tiempo) ^ 0.5) / Exp(tasa_extranjera * tiempo) + (eftocon(Tasa_Local)) * strike / Exp(Tasa_Local * tiempo) * nd2 - (eftocon(tasa_extranjera)) * Spot / Exp(tasa_extranjera * tiempo) * nd1
+            If operación = "Ven" Then THETA = -THETA
+         End If
+
+End Function
+
+Function eftocon(r)
+         eftocon = Log(1 + r)
+End Function
+
+Function Spot(Divisa)
+
+Select Case Divisa
+
+    Case Is = "EURUSD"
+        Spot = WorksheetFunction.Average(Sheets("PUNTOS FWD").Range("E4:F4"))
+    Case Is = "GBPUSD"
+        Spot = WorksheetFunction.Average(Sheets("PUNTOS FWD").Range("G4:H4"))
+    Case Is = "USDJPY"
+        Spot = WorksheetFunction.Average(Sheets("PUNTOS FWD").Range("I4:J4"))
+    Case Is = "USDCHF"
+        Spot = WorksheetFunction.Average(Sheets("PUNTOS FWD").Range("K4:L4"))
+    Case Is = "USDCAD"
+        Spot = WorksheetFunction.Average(Sheets("PUNTOS FWD").Range("M4:N4"))
+    Case Is = "USDSEK"
+        Spot = WorksheetFunction.Average(Sheets("PUNTOS FWD").Range("O4:P4"))
+    Case Is = "USDDKK"
+        Spot = WorksheetFunction.Average(Sheets("PUNTOS FWD").Range("Q4:R4"))
+    Case Is = "USDBRL"
+        Spot = WorksheetFunction.Average(Sheets("PUNTOS FWD").Range("S4:T4"))
+    Case Is = "USDMXN"
+        Spot = WorksheetFunction.Average(Sheets("PUNTOS FWD").Range("U4:V4"))
+    Case Is = "AUDUSD"
+        Spot = WorksheetFunction.Average(Sheets("PUNTOS FWD").Range("W4:X4"))
+    Case Is = "USDCOP"
+        Spot = WorksheetFunction.Average(Sheets("PUNTOS FWD").Range("Y4:Z4"))
+    Case Else
+    
+End Select
+
+
+End Function
+
+Function Tasa_Local(Divisa, Fecha)
+
+Select Case Divisa
+
+    Case Is = "EURUSD"
+        Tasa_Local = WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 7, 1) + WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 8, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 1, 1))
+    Case Is = "GBPUSD"
+        Tasa_Local = WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 7, 1) + WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 8, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 1, 1))
+    Case Is = "USDJPY"
+        Tasa_Local = WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 16, 1) + WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 17, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 1, 1))
+    Case Is = "USDCHF"
+        Tasa_Local = WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 19, 1) + WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 20, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 1, 1))
+    Case Is = "USDCAD"
+        Tasa_Local = WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 22, 1) + WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 23, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 1, 1))
+    Case Is = "USDSEK"
+        Tasa_Local = WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 25, 1) + WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 26, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 1, 1))
+    Case Is = "USDDKK"
+        Tasa_Local = WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 28, 1) + WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 29, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 1, 1))
+    Case Is = "USDBRL"
+        Tasa_Local = WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 31, 1) + WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 32, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 1, 1))
+    Case Is = "USDMXN"
+        Tasa_Local = WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 34, 1) + WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 35, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 1, 1))
+    Case Is = "AUDUSD"
+        Tasa_Local = WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 7, 1) + WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 8, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 1, 1))
+    Case Is = "USDCOP"
+        Tasa_Local = WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 40, 1) + WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 41, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 1, 1))
+    Case Else
+
+End Select
+
+Tasa_Local = (Log(Tasa_Local) * -1) * (365 / (Fecha - Sheets("CURVAS").Range("B24").Value))
+
+End Function
+
+Function Tasa_Exterior(Divisa, Fecha)
+
+Select Case Divisa
+
+    Case Is = "EURUSD"
+        Tasa_Exterior = WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 10, 1) + WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 11, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 1, 1))
+    Case Is = "GBPUSD"
+        Tasa_Exterior = WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 13, 1) + WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 14, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 1, 1))
+    Case Is = "USDJPY"
+        Tasa_Exterior = WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 7, 1) + WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 8, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 1, 1))
+    Case Is = "USDCHF"
+        Tasa_Exterior = WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 7, 1) + WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 8, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 1, 1))
+    Case Is = "USDCAD"
+        Tasa_Exterior = WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 7, 1) + WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 8, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 1, 1))
+    Case Is = "USDSEK"
+        Tasa_Exterior = WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 7, 1) + WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 8, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 1, 1))
+    Case Is = "USDDKK"
+        Tasa_Exterior = WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 7, 1) + WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 8, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 1, 1))
+    Case Is = "USDBRL"
+        Tasa_Exterior = WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 7, 1) + WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 8, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 1, 1))
+    Case Is = "USDMXN"
+        Tasa_Exterior = WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 7, 1) + WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 8, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 1, 1))
+    Case Is = "AUDUSD"
+        Tasa_Exterior = WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 37, 1) + WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 38, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 1, 1))
+    Case Is = "USDCOP"
+        Tasa_Exterior = WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 7, 1) + WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 8, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("CURVAS").Range("B25:AP42"), 1, 1))
+    Case Else
+
+End Select
+
+Tasa_Exterior = (Log(Tasa_Exterior) * -1) * (365 / (Fecha - Sheets("CURVAS").Range("B24").Value))
+
+End Function
+
+Function Tasa_Fwd(Divisa, Fecha)
+
+Select Case Divisa
+
+    Case Is = "EURUSD"
+        Tasa_Fwd = WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("AD5:AF22"), 2, 1) + WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("AD5:AF22"), 3, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("AD5:AF22"), 1, 1))
+    Case Is = "GBPUSD"
+        Tasa_Fwd = WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("AG5:AI22"), 2, 1) + WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("AG5:AI22"), 3, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("AG5:AI22"), 1, 1))
+    Case Is = "USDJPY"
+        Tasa_Fwd = WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("AJ5:AL22"), 2, 1) + WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("AJ5:AL22"), 3, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("AJ5:AL22"), 1, 1))
+    Case Is = "USDCHF"
+        Tasa_Fwd = WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("AM5:AO22"), 2, 1) + WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("AM5:AO22"), 3, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("AM5:AO22"), 1, 1))
+    Case Is = "USDCAD"
+        Tasa_Fwd = WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("AP5:AR22"), 2, 1) + WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("AP5:AR22"), 3, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("AP5:AR22"), 1, 1))
+    Case Is = "USDSEK"
+        Tasa_Fwd = WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("AS5:AU22"), 2, 1) + WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("AS5:AU22"), 3, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("AS5:AU22"), 1, 1))
+    Case Is = "USDDKK"
+        Tasa_Fwd = WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("AV5:AX22"), 2, 1) + WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("AV5:AX22"), 3, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("AV5:AX22"), 1, 1))
+    Case Is = "USDBRL"
+        Tasa_Fwd = WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("AY5:BA22"), 2, 1) + WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("AY5:BA22"), 3, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("AY5:BA22"), 1, 1))
+    Case Is = "USDMXN"
+        Tasa_Fwd = WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("BB5:BD22"), 2, 1) + WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("BB5:BD22"), 3, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("BB5:BD22"), 1, 1))
+    Case Is = "AUDUSD"
+        Tasa_Fwd = WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("BE5:BG22"), 2, 1) + WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("BE5:BG22"), 3, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("BE5:BG22"), 1, 1))
+    Case Is = "USDCOP"
+        Tasa_Fwd = WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("BH5:BJ22"), 2, 1) + WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("BH5:BJ22"), 3, 1) * (Fecha - WorksheetFunction.VLookup(Fecha, Sheets("PUNTOS FWD").Range("BH5:BJ22"), 1, 1))
+    Case Else
+
+End Select
+
+
+End Function
+
+Function Vol(Divisa, Fecha, strike)
+
+Dim Fila1 As Integer
+Dim Fila2 As Integer
+Dim DIF As Double
+Dim DIF1 As Double
+Dim DIF2 As Double
+Dim DIF3 As Double
+Dim Columna11 As Integer
+Dim Columna12 As Integer
+Dim Columna21 As Integer
+Dim Columna22 As Integer
+Dim Vol1 As Double
+Dim Vol2 As Double
+Dim Dummy1 As Integer
+Dim Dummy2 As Integer
+Dim OPCION As String
+
+
+' Para determinar en que fila está la fecha
+
+Fila1 = WorksheetFunction.Match(WorksheetFunction.VLookup(Fecha, Sheets("VOL").Range("A38:A50"), 1) * 1, Sheets("VOL").Range("A38:A50"), 1)
+Fila2 = Fila1 + 1
+
+' Para determinar a que columan se acerca más el strike
+
+
+
+Select Case Divisa
+    
+    Case Is = "USDCOP"
+        
+       DIF = strike - Sheets("VOL").Cells(37 + Fila1, 110).Value
+       DAF = strike - Sheets("VOL").Cells(37 + Fila2, 110).Value
+       
+        Select Case DIF
+                    
+                    Case Is >= 0 'OTM CALL o ITM PUT
+                    
+                        OPCION = 1
+                    
+                        DIF1 = Abs(DIF)
+                        DIF2 = Abs(strike - Sheets("VOL").Cells(Fila1 + 37, 112).Value)
+                        DIF3 = Abs(strike - Sheets("VOL").Cells(Fila1 + 37, 114).Value)
+                        
+                        DAF1 = Abs(DAF)
+                        DAF2 = Abs(strike - Sheets("VOL").Cells(Fila2 + 37, 112).Value)
+                        DAF3 = Abs(strike - Sheets("VOL").Cells(Fila2 + 37, 114).Value)
+                        
+                                                
+                        If DIF1 < DIF2 Then
+                            Columna11 = 110
+                            Columna12 = 112
+                            ElseIf DIF2 < DIF3 Then
+                                If strike > Sheets("Vol").Cells(37 + Fila1, 112).Value Then
+                                        Columna11 = 112
+                                        Columna12 = 114
+                                    Else
+                                        Columna11 = 110
+                                        Columna12 = 112
+                                    End If
+                                Else
+                                Columna11 = 112
+                                Columna12 = 114
+                        End If
+                                   
+                                    If strike > Sheets("Vol").Cells(37 + Fila1, 114).Value Then
+                                            Dummy1 = 1
+                                        Else
+                                            Dummy1 = 0
+                                    End If
+                                        
+                                    
+                        
+                        
+                        If DAF1 < DAF2 Then
+                            Columna21 = 110
+                            Columna22 = 112
+                            ElseIf DAF2 < DAF3 Then
+                                If strike > Sheets("Vol").Cells(37 + Fila2, 112).Value Then
+                                        Columna21 = 112
+                                        Columna22 = 114
+                                    Else
+                                        Columna21 = 110
+                                        Columna22 = 112
+                                    End If
+                                Else
+                                Columna21 = 112
+                                Columna22 = 114
+                        End If
+                                
+                                If strike > Sheets("Vol").Cells(37 + Fila2, 114).Value Then
+                                            Dummy2 = 1
+                                        Else
+                                            Dummy2 = 0
+                                End If
+                                
+                                
+                                
+                                
+                      Case Is < 0 'OTM PUT o ITM CALL
+                        
+                        OPCION = 2
+                        
+                        DIF1 = Abs(DIF)
+                        DIF2 = Abs(strike - Sheets("VOL").Cells(Fila1 + 37, 108).Value)
+                        DIF3 = Abs(strike - Sheets("VOL").Cells(Fila1 + 37, 106).Value)
+                        
+                        DAF1 = Abs(DAF)
+                        DAF2 = Abs(strike - Sheets("VOL").Cells(Fila2 + 37, 108).Value)
+                        DAF3 = Abs(strike - Sheets("VOL").Cells(Fila2 + 37, 106).Value)
+                                                
+                        If DIF1 < DIF2 Then
+                            Columna11 = 108
+                            Columna12 = 110
+                            ElseIf DIF2 < DIF3 Then
+                                If strike < Sheets("Vol").Cells(37 + Fila1, 108).Value Then
+                                        Columna11 = 106
+                                        Columna12 = 108
+                                    Else
+                                        Columna11 = 108
+                                        Columna12 = 110
+                                    End If
+                                Else
+                                Columna11 = 106
+                                Columna12 = 108
+                        End If
+                        
+                                    If strike < Sheets("Vol").Cells(37 + Fila1, 106).Value Then
+                                            Dummy1 = 1
+                                        Else
+                                            Dummy1 = 0
+                                    End If
+                        
+                        
+                        
+                        
+                        If DAF1 < DAF2 Then
+                            Columna21 = 108
+                            Columna22 = 110
+                            ElseIf DAF2 < DAF3 Then
+                                If strike < Sheets("Vol").Cells(37 + Fila2, 108).Value Then
+                                        Columna21 = 106
+                                        Columna22 = 108
+                                    Else
+                                        Columna21 = 108
+                                        Columna22 = 110
+                                    End If
+                                Else
+                                Columna21 = 106
+                                Columna22 = 108
+                        End If
+                        
+                                If strike < Sheets("Vol").Cells(37 + Fila2, 106).Value Then
+                                            Dummy2 = 1
+                                        Else
+                                            Dummy2 = 0
+                                End If
+            
+            End Select
+    
+    Case Else
+
+End Select
+
+
+
+
+If Dummy1 = 0 Then
+Vol1 = Sheets("Vol").Cells(Fila1 + 37, Columna11 - 1) + ((Sheets("Vol").Cells(Fila1 + 37, Columna12 - 1) - Sheets("Vol").Cells(Fila1 + 37, Columna11 - 1)) / (Sheets("Vol").Cells(Fila1 + 37, Columna12) - Sheets("Vol").Cells(Fila1 + 37, Columna11))) * (strike - Sheets("Vol").Cells(Fila1 + 37, Columna11))
+Else
+    Select Case OPCION
+    Case Is = 1
+        Vol1 = Sheets("Vol").Cells(Fila1 + 37, Columna12 - 1)
+    Case Is = 2
+        Vol1 = Sheets("Vol").Cells(Fila1 + 37, Columna11 - 1)
+    End Select
+End If
+
+
+If Dummy2 = 0 Then
+Vol2 = Sheets("Vol").Cells(Fila2 + 37, Columna21 - 1) + ((Sheets("Vol").Cells(Fila2 + 37, Columna22 - 1) - Sheets("Vol").Cells(Fila2 + 37, Columna21 - 1)) / (Sheets("Vol").Cells(Fila2 + 37, Columna22) - Sheets("Vol").Cells(Fila2 + 37, Columna21))) * (strike - Sheets("Vol").Cells(Fila2 + 37, Columna21))
+Else
+Select Case OPCION
+    Case Is = 1
+    Vol2 = Sheets("Vol").Cells(Fila2 + 37, Columna22 - 1)
+    Case Is = 2
+        Vol2 = Sheets("Vol").Cells(Fila2 + 37, Columna21 - 1)
+    End Select
+End If
+
+
+Vol = Vol1 + ((Vol2 - Vol1) / (Sheets("Vol").Cells(Fila2 + 37, 1) - Sheets("Vol").Cells(Fila1 + 37, 1))) * (Fecha - Sheets("Vol").Cells(Fila1 + 37, 1))
+
+
+End Function
+
+Sub actualizar()
+
+' Hoja de opciones
+
+Sheets("LIBRO OPCIONES").Activate
+ActiveSheet.Cells(4, 1).Select
+Selection.End(xlDown).Select
+contador = ActiveCell.Row
+
+Cells(4, 24).Select
+ActiveCell.FormulaR1C1 = "=Tasa_Local(RC[-3],RC[-17])"
+Selection.AutoFill Range(Cells(4, 24), Cells(contador, 24))
+
+Cells(4, 25).Select
+ActiveCell.FormulaR1C1 = "=Tasa_Exterior(RC[-4],RC[-18])"
+Selection.AutoFill Range(Cells(4, 25), Cells(contador, 25))
+
+Cells(4, 27).Select
+ActiveCell.FormulaR1C1 = "=Vol(RC[-6],RC[-20],RC[-4])"
+Selection.AutoFill Range(Cells(4, 27), Cells(contador, 27))
+
+
+' Hoja de forwards
+
+Sheets("LIBRO FORWARDS").Activate
+ActiveSheet.Cells(4, 1).Select
+Selection.End(xlDown).Select
+contador = ActiveCell.Row
+
+Cells(4, 24).Select
+ActiveCell.FormulaR1C1 = "=Tasa_Local(RC[-2],RC[-17])"
+Selection.AutoFill Range(Cells(4, 24), Cells(contador, 24))
+
+Cells(4, 25).Select
+ActiveCell.FormulaR1C1 = "=Tasa_Exterior(RC[-3],RC[-18])"
+Selection.AutoFill Range(Cells(4, 25), Cells(contador, 25))
+
+
+
+End Sub
+
+
+
+
